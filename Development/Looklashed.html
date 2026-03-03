@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LookLashed — Beauty & Wellness Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#1a1118; --bark:#3d2b35; --rose:#c97b8a; --blush:#e8b4bf;
+      --petal:#f5dde3; --cream:#fdf6f0; --gold:#c9a96e; --gold-lt:#f0ddb8;
+      --mist:#f8f0f3; --border:rgba(201,123,138,.18);
+      --shadow-sm:0 2px 12px rgba(26,17,24,.07);
+      --shadow-md:0 8px 32px rgba(26,17,24,.11);
+      --shadow-lg:0 20px 56px rgba(26,17,24,.15);
+      --r-sm:12px; --r-md:20px; --r-lg:28px;
+      --ease:cubic-bezier(.4,0,.2,1);
+      --nav-h: 68px;
+      --ticker-h: 36px;
+      --bar-total: 104px; /* nav + ticker combined height */
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;overflow-x:hidden}
+
+    /* ── PAGE SYSTEM ── */
+    .page{display:none;animation:rise .45s var(--ease)}
+    .page.active{display:block}
+    @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+    /* ══════════════════════════════════════
+       STICKY BAR WRAPPER
+       Both the nav and the ticker sit inside
+       one sticky container so they move as
+       one unit and content hides behind both.
+    ══════════════════════════════════════ */
+    .sticky-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      /* Solid background = content cannot bleed through */
+      background: var(--cream);
+      box-shadow: 0 2px 20px rgba(26,17,24,.08);
+    }
+
+    /* ── NAV ── */
+    header{
+      background: var(--cream);
+      padding:0 clamp(20px,5vw,72px);
+      display:flex;align-items:center;justify-content:space-between;
+      height:var(--nav-h);
+      border-bottom:1px solid var(--border);
+    }
+    .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+    .brand-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--gold));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .brand-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+    .brand-name span{color:var(--rose);font-style:italic}
+    nav{display:flex;align-items:center;gap:6px}
+    .nav-link{background:none;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--bark);padding:8px 16px;border-radius:50px;transition:all .22s}
+    .nav-link:hover{background:var(--petal);color:var(--rose)}
+    .nav-link.active{color:var(--rose)}
+    .nav-auth{display:flex;gap:8px;margin-left:12px}
+
+    /* ── TICKER (scrolling text) ── */
+    .ticker-wrap {
+      width: 100%;
+      height: var(--ticker-h);
+      background: var(--ink);        /* dark background so content hides behind it */
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    .ticker {
+      display: flex;
+      gap: 3rem;
+      width: max-content;
+      animation: ticker 25s linear infinite;
+    }
+    .ticker span {
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--cream);
+      white-space: nowrap;
+    }
+    .ticker span.dot { color: var(--rose); }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── BUTTONS ── */
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 26px;border-radius:50px;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;border:none;transition:all .24s var(--ease);white-space:nowrap}
+    .btn-ghost{background:transparent;border:1.5px solid var(--rose);color:var(--rose)}
+    .btn-ghost:hover{background:var(--rose);color:white;transform:translateY(-1px)}
+    .btn-solid{background:var(--ink);color:var(--cream)}
+    .btn-solid:hover{background:var(--bark);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .btn-rose{background:linear-gradient(135deg,var(--rose),#b86070);color:white}
+    .btn-rose:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,123,138,.4)}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#b8893e);color:white}
+    .btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,169,110,.4)}
+    .btn-lg{padding:14px 36px;font-size:14px}
+    .btn-sm{padding:8px 18px;font-size:12px}
+    .btn-block{width:100%;justify-content:center}
+
+    /* ── HERO ── */
+    .hero{min-height:calc(100vh - var(--bar-total));display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;padding:60px clamp(20px,5vw,80px);position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;right:-120px;top:-80px;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(232,180,191,.35) 0%,transparent 65%);pointer-events:none}
+    .hero-left{position:relative;z-index:2;padding:0 3rem 5rem}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:10px;background:var(--gold-lt);border-radius:50px;padding:6px 18px;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:#8a6520;margin-bottom:28px}
+    .hero-eyebrow::before{content:'✦';font-size:9px}
+    .hero-title{font-family:'Playfair Display',serif;font-size:clamp(44px,5.5vw,82px);font-weight:600;line-height:1.04;color:var(--ink);margin-bottom:24px}
+    .hero-title em{color:var(--rose);font-style:italic}
+    .hero-sub{font-size:16px;font-weight:300;color:var(--bark);max-width:460px;line-height:1.8;margin-bottom:40px}
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
+    .hero-proof{display:flex;gap:36px;margin-top:56px;padding-top:36px;border-top:1px solid var(--border)}
+    .proof-num{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:var(--ink);line-height:1}
+    .proof-label{font-size:12px;color:#8a7070;letter-spacing:.07em;margin-top:4px}
+    .hero-right{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;padding:40px}
+    .booking-card{background:white;border-radius:var(--r-lg);padding:36px;box-shadow:var(--shadow-lg);width:100%;max-width:380px;position:relative;animation:float 5s ease-in-out infinite}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    .bcard-lbl{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--rose);margin-bottom:14px}
+    .bcard-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:4px}
+    .bcard-sub{font-size:13px;color:#8a7070;margin-bottom:22px}
+    .mini-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .chip{padding:7px 16px;border-radius:50px;font-size:12px;font-weight:500;border:1.5px solid var(--border);cursor:pointer;transition:all .18s;background:var(--mist);color:var(--bark)}
+    .chip:hover,.chip.on{background:var(--ink);color:white;border-color:var(--ink)}
+    .time-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:22px}
+    .tc{padding:9px 4px;border-radius:10px;font-size:12px;font-weight:500;text-align:center;border:1.5px solid var(--border);background:white;cursor:pointer;transition:all .18s;color:var(--bark)}
+    .tc:hover,.tc.on{background:var(--ink);color:white;border-color:var(--ink)}
+    .tc.off{opacity:.35;pointer-events:none;text-decoration:line-through}
+    .fc-badge{position:absolute;background:white;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow-md);font-size:12px}
+    .fc-badge-1{top:-16px;right:-16px;min-width:130px;z-index:3}
+    .fc-badge-2{bottom:-16px;left:-16px;min-width:150px;z-index:3}
+    .fc-lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#a08080;margin-bottom:3px}
+    .fc-val{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink)}
+    .fc-sub{font-size:11px;color:#6ab187;font-weight:600}
+    .avatars{display:flex;margin-top:6px}
+    .av{width:26px;height:26px;border-radius:50%;border:2px solid white;margin-left:-7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white}
+    .av:first-child{margin-left:0}
+
+    /* ── SECTIONS ── */
+    .section-head{text-align:center;margin-bottom:52px}
+    .section-kicker{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:14px}
+    .section-title{font-family:'Playfair Display',serif;font-size:clamp(32px,4vw,54px);font-weight:600;line-height:1.15;color:var(--ink);margin-bottom:14px}
+    .section-title em{color:var(--rose);font-style:italic}
+    .section-sub{font-size:15px;font-weight:300;color:var(--bark);max-width:520px;margin:0 auto;line-height:1.8}
+
+    /* ── SERVICE CARDS ── */
+    .filter-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+    .f-btn{padding:9px 22px;border-radius:50px;border:1.5px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;color:var(--bark)}
+    .f-btn:hover,.f-btn.on{background:var(--ink);color:white;border-color:var(--ink)}
+    .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:24px;max-width:1300px;margin:0 auto}
+    .svc-card{background:white;border-radius:var(--r-lg);overflow:hidden;border:1.5px solid transparent;box-shadow:var(--shadow-sm);transition:all .35s var(--ease);cursor:pointer}
+    .svc-card:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg);border-color:var(--blush)}
+    .svc-img-wrap{width:100%;height:210px;overflow:hidden;position:relative;background:var(--petal)}
+    .svc-img-wrap img{width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .5s var(--ease);display:block}
+    .svc-card:hover .svc-img-wrap img{transform:scale(1.07)}
+    .svc-img-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(to top,rgba(253,246,240,.5),transparent);pointer-events:none}
+    .svc-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#c0a0a8;background:linear-gradient(135deg,var(--petal),var(--mist))}
+    .svc-body{padding:22px 24px 24px}
+    .svc-tag{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+    .svc-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--ink);margin-bottom:8px}
+    .svc-desc{font-size:13px;font-weight:300;color:#7a6060;line-height:1.65;margin-bottom:16px}
+    .svc-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:14px}
+    .svc-price{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--ink)}
+    .svc-price small{font-family:'Jost',sans-serif;font-size:12px;font-weight:400;color:#a08080}
+    .svc-dur{font-size:12px;color:#a08080;background:var(--mist);padding:4px 12px;border-radius:50px}
+
+    /* ── PACKAGES ── */
+    .packages-section{background:var(--ink);padding:80px clamp(20px,5vw,72px)}
+    .packages-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;max-width:1000px;margin:40px auto 0}
+    .pkg-card{border:1.5px solid rgba(255,255,255,.12);border-radius:var(--r-lg);padding:32px;background:rgba(255,255,255,.04);transition:all .3s;cursor:pointer}
+    .pkg-card:hover{background:rgba(255,255,255,.08);border-color:var(--rose);transform:translateY(-4px)}
+    .pkg-badge{display:inline-block;background:linear-gradient(135deg,var(--rose),var(--gold));color:white;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;border-radius:50px;margin-bottom:16px}
+    .pkg-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:white;margin-bottom:10px}
+    .pkg-includes{font-size:13px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:20px}
+    .pkg-price{display:flex;align-items:baseline;gap:8px}
+    .pkg-price-main{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:white}
+    .pkg-price-was{font-size:14px;color:rgba(255,255,255,.35);text-decoration:line-through}
+    .pkg-save{font-size:12px;color:#6ab187;font-weight:700}
+
+    /* ── BOOKING ── */
+    .booking-layout{display:grid;grid-template-columns:1fr 360px;gap:36px;max-width:1100px;margin:0 auto}
+    .booking-main{background:white;border-radius:var(--r-lg);padding:40px;box-shadow:var(--shadow-sm)}
+    .steps-track{display:flex;align-items:flex-start;gap:0;margin-bottom:40px;position:relative}
+    .steps-track::before{content:'';position:absolute;top:17px;left:17px;right:17px;height:2px;background:var(--border);z-index:0}
+    .step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1}
+    .step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:white;border:2px solid var(--border);color:#b0a0a0;transition:all .3s}
+    .step-item.done .step-dot{background:var(--rose);border-color:var(--rose);color:white}
+    .step-item.active .step-dot{background:var(--ink);border-color:var(--ink);color:white}
+    .step-lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#b0a0a0;transition:color .3s}
+    .step-item.active .step-lbl{color:var(--ink)}
+    .step-item.done .step-lbl{color:var(--rose)}
+    .step-panel{display:none;animation:rise .35s var(--ease)}
+    .step-panel.active{display:block}
+    .panel-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--ink);margin-bottom:24px}
+    .beaut-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+    .beaut-card{border:2px solid var(--border);border-radius:var(--r-md);padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--mist)}
+    .beaut-card:hover,.beaut-card.on{border-color:var(--rose);background:rgba(232,180,191,.12)}
+    .beaut-av{width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:white}
+    .beaut-name{font-weight:600;font-size:14px;color:var(--ink);margin-bottom:3px}
+    .beaut-spec{font-size:11px;color:#a08080}
+    .beaut-stars{color:var(--gold);font-size:12px;margin-top:5px}
+    .cal-hdr-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+    .cal-hdr{font-size:11px;text-align:center;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#b0a0a0;padding:4px 0}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:28px}
+    .cal-day{aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;transition:all .16s;border:1.5px solid transparent;background:white;color:var(--ink)}
+    .cal-day:hover{border-color:var(--rose);color:var(--rose)}
+    .cal-day.on{background:var(--ink);color:white;border-color:var(--ink)}
+    .cal-day.today{border-color:var(--gold);color:var(--gold);font-weight:700}
+    .cal-day.past,.cal-day.empty{opacity:.28;pointer-events:none;background:none;border:none}
+    .time-slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:28px}
+    .ts{padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);font-size:12px;font-weight:600;text-align:center;cursor:pointer;transition:all .16s;background:white;color:var(--bark)}
+    .ts:hover,.ts.on{background:var(--ink);color:white;border-color:var(--ink)}
+    .ts.busy{opacity:.3;pointer-events:none;text-decoration:line-through}
+
+    /* ── FORMS ── */
+    .form-group{margin-bottom:20px}
+    .form-label{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#a08080;margin-bottom:8px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:13px 16px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:var(--mist);font-family:'Jost',sans-serif;font-size:14px;color:var(--ink);outline:none;transition:border-color .22s,box-shadow .22s;appearance:none}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--rose);background:white;box-shadow:0 0 0 4px rgba(201,123,138,.1)}
+    .form-textarea{height:90px;resize:none}
+    .form-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .sel-wrap{position:relative}
+    .sel-wrap::after{content:'▾';position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--rose);pointer-events:none;font-size:14px}
+
+    /* ── ORDER SIDEBAR ── */
+    .order-sidebar{background:white;border-radius:var(--r-lg);padding:30px;box-shadow:var(--shadow-sm);height:fit-content;position:sticky;top:calc(var(--bar-total) + 20px)}
+    .sidebar-hdr{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--ink);border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:20px}
+    .order-row{display:flex;justify-content:space-between;margin-bottom:13px;font-size:14px}
+    .order-lbl{color:#a08080;font-weight:400}
+    .order-val{font-weight:600;color:var(--ink);text-align:right}
+    .order-total{border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
+    .order-total .order-lbl{color:var(--ink);font-weight:700;font-size:15px}
+    .order-total .order-val{font-family:'Playfair Display',serif;font-size:22px;font-weight:700}
+    .promo-box{background:linear-gradient(135deg,rgba(201,169,110,.12),rgba(201,123,138,.1));border:1.5px solid var(--blush);border-radius:var(--r-sm);padding:14px 16px;margin:16px 0}
+    .promo-title{font-weight:700;color:var(--bark);font-size:13px;margin-bottom:3px}
+    .promo-sub{font-size:12px;color:#8a7070;line-height:1.5}
+    .loyalty-strip{display:flex;align-items:center;gap:10px;background:var(--gold-lt);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:16px}
+    .loyalty-icon{font-size:22px}
+    .loyalty-text{font-size:12px;color:#7a5b20;line-height:1.4}
+    .loyalty-text strong{font-weight:700}
+
+    /* ── AUTH ── */
+    .auth-wrap{min-height:calc(100vh - var(--bar-total));display:flex;align-items:center;justify-content:center;padding:40px 20px;background:linear-gradient(160deg,var(--mist) 0%,var(--petal) 100%)}
+    .auth-card{background:white;border-radius:var(--r-lg);padding:48px 44px;width:100%;max-width:440px;box-shadow:var(--shadow-lg)}
+    .auth-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--ink);text-align:center;margin-bottom:6px}
+    .auth-sub{font-size:14px;color:#a08080;text-align:center;margin-bottom:32px}
+    .auth-logo-wrap{display:flex;justify-content:center;margin-bottom:24px}
+    .auth-brand-icon{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--gold));display:flex;align-items:center;justify-content:center;font-size:24px}
+    .divider{display:flex;align-items:center;gap:14px;margin:20px 0;color:#c0b0b0;font-size:12px}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    .auth-footer{text-align:center;margin-top:22px;font-size:14px;color:#a08080}
+    .auth-link{color:var(--rose);font-weight:600;cursor:pointer}
+    .social-btns{display:flex;gap:10px;margin-bottom:4px}
+    .social-btn{flex:1;padding:11px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:white;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;color:var(--bark);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+    .social-btn:hover{border-color:var(--rose);background:var(--mist)}
+
+    /* ── CONTACT ── */
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;max-width:960px;margin:0 auto}
+    .contact-info h3{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:20px;color:var(--ink)}
+    .contact-info p{font-size:15px;font-weight:300;color:var(--bark);line-height:1.8;margin-bottom:28px}
+    .contact-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .c-icon{width:42px;height:42px;border-radius:50%;background:var(--petal);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .c-detail strong{display:block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#b0a0a0;margin-bottom:2px}
+    .c-detail span{font-size:15px;color:var(--ink)}
+    .contact-form{background:white;border-radius:var(--r-lg);padding:36px;box-shadow:var(--shadow-sm)}
+    .contact-form h3{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:22px;color:var(--ink)}
+
+    /* ── SUCCESS ── */
+    .success-screen{text-align:center;padding:60px 40px;display:none;animation:rise .5s var(--ease)}
+    .success-screen.show{display:block}
+    .success-circle{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--gold));display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 24px}
+    .success-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:600;margin-bottom:12px;color:var(--ink)}
+    .success-sub{font-size:15px;font-weight:300;color:var(--bark);margin-bottom:32px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.7}
+    .booking-ref{display:inline-block;background:var(--mist);border-radius:var(--r-sm);padding:10px 24px;font-family:monospace;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:.1em;margin-bottom:28px}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:28px;right:28px;z-index:10000;background:var(--ink);color:white;padding:16px 24px;border-radius:var(--r-md);box-shadow:var(--shadow-lg);font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;transform:translateY(100px);opacity:0;transition:all .4s var(--ease);max-width:340px}
+    .toast.show{transform:none;opacity:1}
+    .toast-icon{font-size:20px}
+    .toast-close{margin-left:auto;cursor:pointer;opacity:.6;font-size:16px;background:none;border:none;color:white}
+
+    /* ── MOBILE ── */
+    .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;background:none;border:none}
+    .hamburger span{width:24px;height:2px;background:var(--ink);border-radius:2px}
+    #mobileMenu{display:none;background:var(--cream);border-bottom:1px solid var(--border);padding:16px 24px;position:sticky;top:var(--bar-total);z-index:999;flex-direction:column;gap:10px}
+
+    @media(max-width:900px){
+      .hero{grid-template-columns:1fr;padding:40px 20px}
+      .hero-right{display:none}
+      .hero-left{padding:0 0 3rem}
+      .booking-layout{grid-template-columns:1fr}
+      .order-sidebar{position:static}
+      .contact-grid{grid-template-columns:1fr;gap:36px}
+      .beaut-grid{grid-template-columns:repeat(2,1fr)}
+      .desktop-nav{display:none}
+      .nav-auth{display:none}
+      .hamburger{display:flex}
+    }
+    @media(max-width:600px){
+      .hero-proof{gap:20px;flex-wrap:wrap}
+      .form-2col{grid-template-columns:1fr}
+      .auth-card{padding:32px 24px}
+      .time-slots-grid{grid-template-columns:repeat(3,1fr)}
+      .packages-grid{grid-template-columns:1fr}
+      .services-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     STICKY BAR — nav + ticker in one block
+     Content scrolls under BOTH of these.
+══════════════════════════════════════ -->
+<div class="sticky-bar">
+
+  <header>
+    <div class="brand" onclick="showPage('home')">
+      <div class="brand-icon">💋</div>
+      <div class="brand-name">Look<span>Lashed</span></div>
+    </div>
+    <nav class="desktop-nav">
+      <button class="nav-link active" id="nav-home" onclick="showPage('home')">Home</button>
+      <button class="nav-link" id="nav-services" onclick="showPage('services')">Services</button>
+      <button class="nav-link" id="nav-booking" onclick="showPage('booking')">Book Now</button>
+      <button class="nav-link" id="nav-contact" onclick="showPage('contact')">Contact</button>
+      <div class="nav-auth">
+        <button class="btn btn-ghost btn-sm" onclick="showPage('login')">Log In</button>
+        <button class="btn btn-solid btn-sm" onclick="showPage('signup')">Sign Up</button>
+      </div>
+    </nav>
+    <button class="hamburger" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+  </header>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>All services performed by certified specialists.</span>
+      <span class="dot">✦</span>
+      <span>First booking? Enjoy 15% off with code FIRST15.</span>
+      <span class="dot">✦</span>
+      <span>Johannesburg's premier beauty studio.</span>
+      <span class="dot">✦</span>
+      <span>All services performed by certified specialists.</span>
+      <span class="dot">✦</span>
+      <span>First booking? Enjoy 15% off with code FIRST15.</span>
+      <span class="dot">✦</span>
+      <span>Johannesburg's premier beauty studio.</span>
+      <span class="dot">✦</span>
+    </div>
+  </div>
+
+</div><!-- /sticky-bar -->
+
+<div id="mobileMenu">
+  <button class="nav-link" onclick="showPage('home');closeMobileMenu()">Home</button>
+  <button class="nav-link" onclick="showPage('services');closeMobileMenu()">Services</button>
+  <button class="nav-link" onclick="showPage('booking');closeMobileMenu()">Book Now</button>
+  <button class="nav-link" onclick="showPage('contact');closeMobileMenu()">Contact</button>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-ghost btn-sm" onclick="showPage('login');closeMobileMenu()">Log In</button>
+    <button class="btn btn-solid btn-sm" onclick="showPage('signup');closeMobileMenu()">Sign Up</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Johannesburg's Premier Beauty Studio</div>
+      <h1 class="hero-title">Your<br><em>Maintenance Day,</em><br>Perfected.</h1>
+      <p class="hero-sub">Book waxing, lashes, nails, massages, eyebrows, and hair installations — all in one seamless platform. Effortless beauty, on your schedule.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-rose btn-lg" onclick="showPage('booking')">Book Appointment →</button>
+        <button class="btn btn-ghost btn-lg" onclick="showPage('services')">Explore Services</button>
+      </div>
+      <div class="hero-proof">
+        <div><div class="proof-num">500+</div><div class="proof-label">Happy Clients</div></div>
+        <div><div class="proof-num">6</div><div class="proof-label">Services</div></div>
+        <div><div class="proof-num">4.9★</div><div class="proof-label">Avg Rating</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div style="position:relative;width:100%;max-width:400px">
+        <div class="booking-card">
+          <div class="bcard-lbl">Quick Book</div>
+          <div class="bcard-title">Choose a Service</div>
+          <div class="bcard-sub">Select a time that works for you</div>
+          <div class="mini-chips" id="heroChips">
+            <span class="chip" onclick="heroChip(this)">Lashes</span>
+            <span class="chip on" onclick="heroChip(this)">Nails</span>
+            <span class="chip" onclick="heroChip(this)">Massage</span>
+            <span class="chip" onclick="heroChip(this)">Waxing</span>
+            <span class="chip" onclick="heroChip(this)">Hair</span>
+          </div>
+          <div class="time-row">
+            <div class="tc off">9:00</div><div class="tc" onclick="heroTime(this)">10:30</div>
+            <div class="tc on">12:00</div><div class="tc" onclick="heroTime(this)">14:00</div>
+            <div class="tc off">15:30</div><div class="tc" onclick="heroTime(this)">16:00</div>
+            <div class="tc" onclick="heroTime(this)">17:30</div><div class="tc off">18:30</div>
+          </div>
+          <button class="btn btn-rose btn-block" onclick="showPage('booking')">Confirm & Book →</button>
+        </div>
+        <div class="fc-badge fc-badge-1">
+          <div class="fc-lbl">Bookings Today</div><div class="fc-val">24</div><div class="fc-sub">↑ 12% this week</div>
+        </div>
+        <div class="fc-badge fc-badge-2">
+          <div class="fc-lbl">Your Beautician</div>
+          <div class="fc-val" style="font-size:15px;margin-bottom:3px">Naledi M.</div>
+          <div class="avatars">
+            <div class="av" style="background:#c97b8a">N</div>
+            <div class="av" style="background:#c9a96e">T</div>
+            <div class="av" style="background:#6b9c8a">L</div>
+            <div class="av" style="background:#8a6b9c">K</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="packages-section">
+    <div class="section-head">
+      <div class="section-kicker">Maintenance Day Bundles</div>
+      <h2 class="section-title" style="color:white">Save More. <em style="color:var(--rose)">Glow More.</em></h2>
+      <p class="section-sub" style="color:rgba(255,255,255,.6)">Combine your favourite services into one luxurious session.</p>
+    </div>
+    <div class="packages-grid">
+      <div class="pkg-card" onclick="showPage('booking')"><div class="pkg-badge">Most Popular</div><div class="pkg-name">Glow Ritual</div><div class="pkg-includes">Lash extensions + Eyebrow shaping + Express facial.</div><div class="pkg-price"><div class="pkg-price-main">R890</div><div class="pkg-price-was">R1,150</div><div class="pkg-save">Save R260</div></div></div>
+      <div class="pkg-card" onclick="showPage('booking')"><div class="pkg-badge">New</div><div class="pkg-name">Total Refresh</div><div class="pkg-includes">Full body wax + Mani & Pedi + 60-min massage.</div><div class="pkg-price"><div class="pkg-price-main">R1,290</div><div class="pkg-price-was">R1,650</div><div class="pkg-save">Save R360</div></div></div>
+      <div class="pkg-card" onclick="showPage('booking')"><div class="pkg-badge">Luxury</div><div class="pkg-name">Maintenance Day</div><div class="pkg-includes">All services. The full LookLashed experience.</div><div class="pkg-price"><div class="pkg-price-main">R2,100</div><div class="pkg-price-was">R2,800</div><div class="pkg-save">Save R700</div></div></div>
+    </div>
+  </div>
+
+  <section style="padding:80px clamp(20px,5vw,72px)">
+    <div class="section-head">
+      <div class="section-kicker">What We Offer</div>
+      <h2 class="section-title">Beauty Services <em>Curated for You</em></h2>
+      <p class="section-sub">From lashes to hair, every service is delivered by certified specialists in a serene, welcoming space.</p>
+    </div>
+    <div class="services-grid" id="homeGrid"></div>
+    <div style="text-align:center;margin-top:40px">
+      <button class="btn btn-solid" onclick="showPage('services')">View All Services →</button>
+    </div>
+  </section>
+</div>
+
+<!-- SERVICES -->
+<div class="page" id="page-services">
+  <section style="padding:60px clamp(20px,5vw,72px)">
+    <div class="section-head">
+      <div class="section-kicker">Menu</div>
+      <h2 class="section-title">Our <em>Services</em></h2>
+      <p class="section-sub">All services performed by certified specialists. First booking? Enjoy 15% off with code <strong>FIRST15</strong>.</p>
+    </div>
+    <div class="filter-row">
+      <button class="f-btn on" onclick="filterSvc(this,'all')">All Services</button>
+      <button class="f-btn" onclick="filterSvc(this,'eyes')">Eyes</button>
+      <button class="f-btn" onclick="filterSvc(this,'body')">Body</button>
+      <button class="f-btn" onclick="filterSvc(this,'hands')">Hands & Feet</button>
+      <button class="f-btn" onclick="filterSvc(this,'hair')">Hair</button>
+      <button class="f-btn" onclick="filterSvc(this,'relax')">Relaxation</button>
+    </div>
+    <div class="services-grid" id="svcGrid"></div>
+  </section>
+</div>
+
+<!-- BOOKING -->
+<div class="page" id="page-booking">
+  <section style="background:var(--mist);padding:60px clamp(20px,5vw,72px)">
+    <div class="section-head" style="margin-bottom:40px">
+      <div class="section-kicker">Appointments</div>
+      <h2 class="section-title">Book Your <em>Session</em></h2>
+    </div>
+    <div class="booking-layout">
+      <div class="booking-main" id="bookingMain">
+        <div class="steps-track" id="stepsTrack">
+          <div class="step-item active" id="step-1"><div class="step-dot">1</div><div class="step-lbl">Service</div></div>
+          <div class="step-item" id="step-2"><div class="step-dot">2</div><div class="step-lbl">Specialist</div></div>
+          <div class="step-item" id="step-3"><div class="step-dot">3</div><div class="step-lbl">Date & Time</div></div>
+          <div class="step-item" id="step-4"><div class="step-dot">4</div><div class="step-lbl">Your Details</div></div>
+        </div>
+        <div class="step-panel active" id="panel-1">
+          <div class="panel-title">Choose Your Service</div>
+          <div class="form-group"><label class="form-label">Service Category</label><div class="sel-wrap"><select class="form-select" id="svcSel" onchange="onSvcChange()"><option value="">— Select a service —</option><option value="lashes">Lash Extensions</option><option value="nails">Nails</option><option value="massage">Massage</option><option value="waxing">Waxing</option><option value="eyebrows">Eyebrow Styling</option><option value="hair">Hair Installation</option></select></div></div>
+          <div class="form-group" id="subGrp" style="display:none"><label class="form-label">Specific Treatment</label><div class="sel-wrap"><select class="form-select" id="subSel" onchange="onSubChange()"><option value="">— Select treatment —</option></select></div></div>
+          <div style="margin-top:28px"><button class="btn btn-rose" onclick="nextStep(2)" id="s1Next" disabled>Next: Choose Specialist →</button></div>
+        </div>
+        <div class="step-panel" id="panel-2">
+          <div class="panel-title">Choose Your Specialist</div>
+          <div class="beaut-grid">
+            <div class="beaut-card" onclick="selBeaut(this,'Naledi M.')"><div class="beaut-av" style="background:linear-gradient(135deg,#c97b8a,#9c6b7a)">N</div><div class="beaut-name">Naledi M.</div><div class="beaut-spec">Lash & Brow Specialist</div><div class="beaut-stars">★★★★★ 4.9</div></div>
+            <div class="beaut-card" onclick="selBeaut(this,'Thandi K.')"><div class="beaut-av" style="background:linear-gradient(135deg,#c9a96e,#b88a4e)">T</div><div class="beaut-name">Thandi K.</div><div class="beaut-spec">Nails & Waxing Expert</div><div class="beaut-stars">★★★★★ 5.0</div></div>
+            <div class="beaut-card" onclick="selBeaut(this,'Lebo S.')"><div class="beaut-av" style="background:linear-gradient(135deg,#6b9c8a,#4e8a7a)">L</div><div class="beaut-name">Lebo S.</div><div class="beaut-spec">Massage & Facial</div><div class="beaut-stars">★★★★☆ 4.8</div></div>
+            <div class="beaut-card" onclick="selBeaut(this,'Kosi D.')"><div class="beaut-av" style="background:linear-gradient(135deg,#8a6b9c,#7a5a8a)">K</div><div class="beaut-name">Kosi D.</div><div class="beaut-spec">Hair Installation</div><div class="beaut-stars">★★★★★ 4.9</div></div>
+            <div class="beaut-card" onclick="selBeaut(this,'No Preference')"><div class="beaut-av" style="background:linear-gradient(135deg,#b0a0a0,#908080)">?</div><div class="beaut-name">No Preference</div><div class="beaut-spec">Next available</div><div class="beaut-stars">✓ Fastest booking</div></div>
+          </div>
+          <div style="display:flex;gap:12px"><button class="btn btn-ghost" onclick="nextStep(1)">← Back</button><button class="btn btn-rose" onclick="nextStep(3)" id="s2Next" disabled>Next: Date & Time →</button></div>
+        </div>
+        <div class="step-panel" id="panel-3">
+          <div class="panel-title">Pick a Date & Time</div>
+          <div style="margin-bottom:14px"><span id="calLbl" style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--ink)"></span></div>
+          <div class="cal-hdr-row"><div class="cal-hdr">Sun</div><div class="cal-hdr">Mon</div><div class="cal-hdr">Tue</div><div class="cal-hdr">Wed</div><div class="cal-hdr">Thu</div><div class="cal-hdr">Fri</div><div class="cal-hdr">Sat</div></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <label class="form-label" style="margin-bottom:10px">Available Times</label>
+          <div class="time-slots-grid" id="timeGrid"></div>
+          <div style="display:flex;gap:12px"><button class="btn btn-ghost" onclick="nextStep(2)">← Back</button><button class="btn btn-rose" onclick="nextStep(4)" id="s3Next" disabled>Next: Your Details →</button></div>
+        </div>
+        <div class="step-panel" id="panel-4">
+          <div class="panel-title">Your Details</div>
+          <div class="form-2col">
+            <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="fName" placeholder="Thandi" oninput="chk4()"></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" id="lName" placeholder="Dlamini" oninput="chk4()"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="eml" placeholder="you@example.com" oninput="chk4()"></div>
+          <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-input" id="phn" placeholder="+27 82 000 0000" oninput="chk4()"></div>
+          <div class="form-group"><label class="form-label">Special Requests (optional)</label><textarea class="form-textarea" placeholder="Allergies, preferences, notes..."></textarea></div>
+          <div style="display:flex;gap:12px"><button class="btn btn-ghost" onclick="nextStep(3)">← Back</button><button class="btn btn-gold" onclick="submitBook()" id="submitBtn" disabled>Confirm Booking ✓</button></div>
+        </div>
+        <div class="success-screen" id="successScreen">
+          <div class="success-circle">✓</div>
+          <div class="success-title">Booking Confirmed!</div>
+          <p class="success-sub">Your appointment is booked. A confirmation will be sent to your email. We can't wait to see you!</p>
+          <div class="booking-ref" id="bookRef">LL-000000</div>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-rose" onclick="resetBook()">Book Another →</button>
+            <button class="btn btn-ghost" onclick="showPage('home')">Back to Home</button>
+          </div>
+        </div>
+      </div>
+      <div class="order-sidebar">
+        <div class="sidebar-hdr">Your Appointment</div>
+        <div class="loyalty-strip"><div class="loyalty-icon">⭐</div><div class="loyalty-text"><strong>Earn loyalty points</strong> with every booking. 10 pts per R100 spent.</div></div>
+        <div class="order-row"><div class="order-lbl">Service</div><div class="order-val" id="s-svc">—</div></div>
+        <div class="order-row"><div class="order-lbl">Treatment</div><div class="order-val" id="s-treat">—</div></div>
+        <div class="order-row"><div class="order-lbl">Specialist</div><div class="order-val" id="s-spec">—</div></div>
+        <div class="order-row"><div class="order-lbl">Date</div><div class="order-val" id="s-date">—</div></div>
+        <div class="order-row"><div class="order-lbl">Time</div><div class="order-val" id="s-time">—</div></div>
+        <div class="promo-box"><div class="promo-title">🎉 New Client Offer</div><div class="promo-sub">First booking? Use code <strong>FIRST15</strong> for 15% off!</div></div>
+        <div class="order-row"><div class="order-lbl">Estimated Price</div><div class="order-val" id="s-price">—</div></div>
+        <div class="order-row order-total"><div class="order-lbl">Total</div><div class="order-val" id="s-total">—</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="page-contact">
+  <section style="padding:60px clamp(20px,5vw,72px)">
+    <div class="section-head">
+      <div class="section-kicker">Get in Touch</div>
+      <h2 class="section-title">We'd Love to <em>Hear from You</em></h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>Visit or Call Us</h3>
+        <p>We're here to help you look and feel your best. Reach out for bookings, enquiries, or just to say hi.</p>
+        <div class="contact-row"><div class="c-icon">📧</div><div class="c-detail"><strong>Email</strong><span>lukhosichwayi@gmail.com</span></div></div>
+        <div class="contact-row"><div class="c-icon">📞</div><div class="c-detail"><strong>Phone</strong><span>+27 123 456 7890</span></div></div>
+        <div class="contact-row"><div class="c-icon">📍</div><div class="c-detail"><strong>Location</strong><span>Johannesburg, Gauteng</span></div></div>
+        <div class="contact-row"><div class="c-icon">🕐</div><div class="c-detail"><strong>Hours</strong><span>Mon–Sat: 8am – 7pm</span></div></div>
+      </div>
+      <div class="contact-form">
+        <h3>Send a Message</h3>
+        <div class="form-group"><label class="form-label">Your Name</label><input type="text" class="form-input" placeholder="Full name"></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="your@email.com"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" style="height:110px" placeholder="How can we help you?"></textarea></div>
+        <button class="btn btn-rose btn-block" onclick="showToast('✅','Message sent! We will get back to you shortly.')">Send Message →</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- LOGIN -->
+<div class="page" id="page-login">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="auth-logo-wrap"><div class="auth-brand-icon">💋</div></div>
+    <div class="auth-title">Welcome Back</div>
+    <div class="auth-sub">Sign in to manage your appointments and loyalty rewards</div>
+    <div class="social-btns"><button class="social-btn" onclick="showToast('🔗','Google sign-in coming soon!')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continue with Google</button></div>
+    <div class="divider">or sign in with email</div>
+    <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPass" placeholder="••••••••"></div>
+    <button class="btn btn-rose btn-block btn-lg" onclick="doLogin()" style="margin-top:8px">Sign In →</button>
+    <div class="auth-footer">Don't have an account? <span class="auth-link" onclick="showPage('signup')">Create one →</span></div>
+  </div></div>
+</div>
+
+<!-- SIGNUP -->
+<div class="page" id="page-signup">
+  <div class="auth-wrap"><div class="auth-card">
+    <div class="auth-logo-wrap"><div class="auth-brand-icon">💋</div></div>
+    <div class="auth-title">Create Account</div>
+    <div class="auth-sub">Join LookLashed and enjoy exclusive member benefits</div>
+    <div class="social-btns"><button class="social-btn" onclick="showToast('🔗','Google sign-up coming soon!')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continue with Google</button></div>
+    <div class="divider">or create with email</div>
+    <div class="form-2col">
+      <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-input" id="rFirst" placeholder="Thandi"></div>
+      <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-input" id="rLast" placeholder="Dlamini"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" id="rEmail" placeholder="you@example.com"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="rPass" placeholder="Min. 8 characters"></div>
+    <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-input" id="rConf" placeholder="Repeat password"></div>
+    <button class="btn btn-rose btn-block btn-lg" onclick="doSignup()" style="margin-top:8px">Create Account →</button>
+    <div class="auth-footer">Already have an account? <span class="auth-link" onclick="showPage('login')">Sign in →</span></div>
+  </div></div>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast-icon" id="tIcon">✓</span>
+  <span id="tMsg">Done!</span>
+  <button class="toast-close" onclick="hideToast()">✕</button>
+</div>
+
+<script>
+const SVCS = [
+  { id:'lashes',   cat:'eyes',  img:'images/Lashes.jpeg',      tag:'Eyes',         name:'Lash Extensions',   desc:'Classic, hybrid & volume sets. Long-lasting and customised to your look.',                price:'From R550', unit:'/set',     dur:'90 min' },
+  { id:'nails',    cat:'hands', img:'images/Nails.jpeg',        tag:'Hands & Feet', name:'Nails',             desc:'Gel manicure, pedicure & nail art by expert nail technicians.',                          price:'From R200', unit:'/session', dur:'45 min' },
+  { id:'massage',  cat:'relax', img:'images/Massage.jpeg',      tag:'Relaxation',   name:'Massage Therapy',   desc:'Swedish, deep tissue & hot stone. Release tension and restore your energy.',               price:'From R450', unit:'/session', dur:'60 min' },
+  { id:'waxing',   cat:'body',  img:'images/Wax.jpeg',          tag:'Body',         name:'Waxing',            desc:'Premium wax for smooth, long-lasting results. All areas available.',                     price:'From R150', unit:'/area',    dur:'30 min' },
+  { id:'eyebrows', cat:'eyes',  img:'images/Microblading.jpeg', tag:'Brows',        name:'Eyebrow Styling',   desc:'Microblading, lamination, shaping & tinting for perfectly arched brows.',               price:'From R250', unit:'/session', dur:'40 min' },
+  { id:'hair',     cat:'hair',  img:'images/WigInstall.jpeg',   tag:'Hair',         name:'Hair Installation', desc:'Professional wig fitting, braids, weaves & knotless styles by specialist stylists.',    price:'From R700', unit:'/install', dur:'120 min'},
+];
+
+function svcCard(s) {
+  return `<div class="svc-card" onclick="showPage('booking')">
+    <div class="svc-img-wrap">
+      <img src="${s.img}" alt="${s.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="svc-img-placeholder" style="display:none">${s.name}</div>
+    </div>
+    <div class="svc-body">
+      <div class="svc-tag">${s.tag}</div>
+      <div class="svc-name">${s.name}</div>
+      <div class="svc-desc">${s.desc}</div>
+      <div class="svc-foot">
+        <div class="svc-price">${s.price}<small>${s.unit}</small></div>
+        <div class="svc-dur">${s.dur}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderGrid(elId, filter) {
+  const items = filter === 'all' ? SVCS : SVCS.filter(s => s.cat === filter);
+  document.getElementById(elId).innerHTML = items.map(svcCard).join('');
+}
+function filterSvc(btn, cat) {
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderGrid('svcGrid', cat);
+}
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  const nl = document.getElementById('nav-' + id);
+  if (nl) nl.classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if (id === 'services') renderGrid('svcGrid', 'all');
+  if (id === 'booking') renderCal();
+}
+function toggleMobileMenu() {
+  const m = document.getElementById('mobileMenu');
+  m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+}
+function closeMobileMenu() { document.getElementById('mobileMenu').style.display = 'none'; }
+
+const subMap = {
+  lashes:['Classic Lashes','Hybrid Lashes','Volume Lashes','Mega Volume','Bottom Lash Fill'],
+  nails:['Gel Manicure','Gel Pedicure','Mani & Pedi Combo','Nail Art','Acrylic Set'],
+  massage:['60-min Swedish','90-min Deep Tissue','Hot Stone','Foot Massage','Couples Massage'],
+  waxing:['Full Legs','Half Legs','Arms','Underarms','Brazilian','Full Body'],
+  eyebrows:['Microblading','Eyebrow Lamination','Shaping & Tint','Henna Brows'],
+  hair:['Wig Installation','Box Braids','Weave','Knotless Braids','Protective Style'],
+};
+const prices = { lashes:'R550–R850',nails:'R200–R450',massage:'R450–R800',waxing:'R150–R550',eyebrows:'R250–R650',hair:'R700–R1400' };
+const names  = { lashes:'Lash Extensions',nails:'Nails',massage:'Massage',waxing:'Waxing',eyebrows:'Eyebrow Styling',hair:'Hair Installation' };
+let bs = { service:'', treatment:'', specialist:'', date:'', time:'' };
+
+function onSvcChange() {
+  const v = document.getElementById('svcSel').value;
+  bs.service = v; bs.treatment = '';
+  document.getElementById('s-svc').textContent   = v ? names[v] : '—';
+  document.getElementById('s-price').textContent = v ? prices[v] : '—';
+  document.getElementById('s-total').textContent = v ? prices[v] : '—';
+  document.getElementById('s-treat').textContent = '—';
+  const grp = document.getElementById('subGrp');
+  const sub = document.getElementById('subSel');
+  if (v && subMap[v]) {
+    grp.style.display = 'block';
+    sub.innerHTML = '<option value="">— Select treatment —</option>' + subMap[v].map(t=>`<option>${t}</option>`).join('');
+    document.getElementById('s1Next').disabled = true;
+  } else {
+    grp.style.display = 'none';
+    document.getElementById('s1Next').disabled = !v;
+  }
+}
+function onSubChange() {
+  const v = document.getElementById('subSel').value;
+  bs.treatment = v;
+  document.getElementById('s-treat').textContent = v || '—';
+  document.getElementById('s1Next').disabled = !v;
+}
+function selBeaut(card, name) {
+  document.querySelectorAll('.beaut-card').forEach(c=>c.classList.remove('on'));
+  card.classList.add('on'); bs.specialist = name;
+  document.getElementById('s2Next').disabled = false;
+  document.getElementById('s-spec').textContent = name;
+}
+function renderCal() {
+  const now = new Date();
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calLbl').textContent = months[now.getMonth()] + ' ' + now.getFullYear();
+  const fd = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  const dim = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  let h = '';
+  for (let i=0;i<fd;i++) h+=`<div class="cal-day empty"></div>`;
+  for (let d=1;d<=dim;d++) {
+    const c = d<now.getDate()?'past':d===now.getDate()?'today':'';
+    h+=`<div class="cal-day ${c}" onclick="selDay(this,${d},${now.getMonth()},${now.getFullYear()})">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = h;
+  renderTimes();
+}
+function selDay(el, d, mo, yr) {
+  document.querySelectorAll('.cal-day').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  bs.date = `${d} ${mn[mo]} ${yr}`;
+  document.getElementById('s-date').textContent = bs.date;
+  bs.time=''; document.getElementById('s-time').textContent='—';
+  document.getElementById('s3Next').disabled=true;
+}
+const TIMES=['08:00','09:00','10:00','10:30','11:00','12:00','12:30','13:00','14:00','15:00','15:30','16:00','17:00','18:00'];
+const BUSY =['08:00','10:00','13:00'];
+function renderTimes() {
+  document.getElementById('timeGrid').innerHTML = TIMES.map(t=>
+    `<div class="ts ${BUSY.includes(t)?'busy':''}" onclick="selTime(this,'${t}')">${t}</div>`
+  ).join('');
+}
+function selTime(el, t) {
+  document.querySelectorAll('.ts').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); bs.time=t;
+  document.getElementById('s-time').textContent=t;
+  document.getElementById('s3Next').disabled=false;
+}
+function chk4() {
+  const ok=['fName','lName','eml','phn'].every(id=>document.getElementById(id).value.trim());
+  document.getElementById('submitBtn').disabled=!ok;
+}
+function nextStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  document.querySelectorAll('.step-item').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if (i+1<n) s.classList.add('done');
+    if (i+1===n) s.classList.add('active');
+  });
+  document.getElementById('bookingMain').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function submitBook() {
+  const name=document.getElementById('fName').value;
+  const ref='LL-'+Math.floor(100000+Math.random()*900000);
+  document.getElementById('bookRef').textContent=ref;
+  document.getElementById('stepsTrack').style.display='none';
+  document.querySelectorAll('.step-panel').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  document.getElementById('successScreen').classList.add('show');
+  showToast('🎉',`Booking confirmed, ${name}! Ref: ${ref}`);
+}
+function resetBook() {
+  bs={service:'',treatment:'',specialist:'',date:'',time:''};
+  document.getElementById('svcSel').value='';
+  document.getElementById('subGrp').style.display='none';
+  document.getElementById('stepsTrack').style.display='flex';
+  document.getElementById('successScreen').classList.remove('show');
+  document.querySelectorAll('.step-panel').forEach(p=>{p.style.display='';});
+  ['s-svc','s-treat','s-spec','s-date','s-time','s-price','s-total'].forEach(id=>document.getElementById(id).textContent='—');
+  nextStep(1);
+}
+function heroChip(el){ document.querySelectorAll('#heroChips .chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+function heroTime(el){ document.querySelectorAll('.time-row .tc').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+function doLogin(){
+  const e=document.getElementById('loginEmail').value, p=document.getElementById('loginPass').value;
+  if(!e||!p){showToast('⚠️','Please fill in all fields.');return;}
+  showToast('👋',`Welcome back, ${e.split('@')[0]}!`);
+  setTimeout(()=>showPage('home'),1200);
+}
+function doSignup(){
+  const f=document.getElementById('rFirst').value,em=document.getElementById('rEmail').value,
+        p=document.getElementById('rPass').value,c=document.getElementById('rConf').value;
+  if(!f||!em||!p||!c){showToast('⚠️','Please fill in all fields.');return;}
+  if(p!==c){showToast('❌','Passwords do not match.');return;}
+  if(p.length<8){showToast('❌','Password must be at least 8 characters.');return;}
+  showToast('🎉',`Welcome to LookLashed, ${f}!`);
+  setTimeout(()=>showPage('home'),1400);
+}
+let tTimer;
+function showToast(icon,msg){
+  clearTimeout(tTimer);
+  document.getElementById('tIcon').textContent=icon;
+  document.getElementById('tMsg').textContent=msg;
+  document.getElementById('toast').classList.add('show');
+  tTimer=setTimeout(hideToast,4000);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+renderGrid('homeGrid','all');
+renderCal();
+</script>
+</body>
+</html>
